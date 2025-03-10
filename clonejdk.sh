@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-git clone --depth 1 https://github.com/JetBrains/JetBrainsRuntime openjdk
+git clone --depth 1 https://github.com/aaaapai/JetBrainsRuntime openjdk
