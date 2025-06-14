@@ -102,6 +102,7 @@ bash ./configure \
     --with-fontconfig-include=$ANDROID_INCLUDE \
     $AUTOCONF_x11arg $AUTOCONF_EXTRA_ARGS \
     --x-libraries=/usr/lib \
+    --disable-ddr \
         $platform_args || \
 error_code=$?
 if [[ "$error_code" -ne 0 ]]; then
