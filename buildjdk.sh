@@ -16,10 +16,12 @@ else
   export buildjdk_ld="$thecxx"
 fi
 
+<<EOF
 if [[ "$TARGET_JDK" == "aarch64" ]]
 then
    export CFLAGS+=" -march=armv8-a+simd+crc+fp16+dotprod+lse"
 fi
+EOF
 
 ln -s -f /usr/include/X11 $ANDROID_INCLUDE/
 ln -s -f /usr/include/fontconfig $ANDROID_INCLUDE/
@@ -53,8 +55,9 @@ AUTOCONF_EXTRA_ARGS+="OBJCOPY=$OBJCOPY \
   "
 
 #no error
-export CFLAGS+=" -DANDROID -D__ANDROID__=1 -D__TERMUX__=1 -DLE_STANDALONE -Wno-int-conversion -Wno-error=implicit-function-declaration -Wno-unused-command-line-argument"
+export CFLAGS+=" -DANDROID -D__ANDROID__=1 -D__TERMUX__=1 -DLE_STANDALONE -Wno-int-conversion -Wno-error=implicit-function-declaration -Wno-unused-command-line-argument -O1 -g3"
 
+<<EOF
 export CFLAGS+=" -O3 -mllvm -hot-cold-split=true -fdata-sections -ffunction-sections -fmerge-all-constants -ftree-vectorize -fomit-frame-pointer -fvectorize -fslp-vectorize -fno-semantic-interposition -pipe -integrated-as -pthread -stdlib=libc++"
 export LDFLAGS+=" -fuse-ld=lld -Wl,--strip-all -fvisibility=hidden -Wl,-O3 -Wl,--gc-sections -Wl,--as-needed"
 #LTO
@@ -68,8 +71,9 @@ export CFLAGS+=" -mllvm -polly -mllvm -polly-vectorizer=stripmine -mllvm -polly-
 export OMP_NUM_THREADS=4
 #fast-math
 export CFLAGS+=" -ffast-math -fno-finite-math-only -fno-signed-zeros -fno-trapping-math -fno-math-errno -freciprocal-math -fno-associative-math"
+EOF
 
-export LDFLAGS+=" -L$PWD/dummy_libs" 
+export LDFLAGS+=" -L$PWD/dummy_libs -g3" 
 
 # Create dummy libraries so we won't have to remove them in OpenJDK makefiles
 mkdir -p dummy_libs
@@ -91,7 +95,8 @@ fi
 git apply --reject --whitespace=fix ../patches/jdk26u_termux.diff || echo "git apply failed (Termux patch set)"
 
 bash ./configure \
-    --with-version-pre="" \
+    --with-version-pre="-debug" \
+    --enable-debug \
     --with-version-opt="" \
     --with-boot-jdk-jvmargs="-XX:+UnlockExperimentalVMOptions -XX:+UnlockDiagnosticVMOptions -XX:+AlwaysActAsServerClassMachine -XX:+AlwaysPreTouch -XX:+DisableExplicitGC -XX:+UseNUMA -XX:NmethodSweepActivity=1 -XX:ReservedCodeCacheSize=400M -XX:ProfiledCodeHeapSize=194M -XX:-DontCompileHugeMethods -XX:MaxNodeLimit=240000 -XX:NodeLimitFudgeFactor=8000 -XX:+UseVectorCmov -XX:+PerfDisableSharedMem -XX:+UseFastUnorderedTimeStamps -XX:+UseCriticalJavaThreadPriority -XX:ThreadPriorityPolicy=1 -XX:AllocatePrefetchStyle=3 -XX:AllocatePrefetchStyle=1 -XX:+UseCriticalJavaThreadPriority -XX:+UseStringDeduplication -XX:+UseFastJNIAccessors -XX:+UseThreadPriorities" \
     --openjdk-target=$TARGET \
@@ -103,11 +108,11 @@ bash ./configure \
     --enable-option-checking=fatal \
     --enable-headless-only=yes \
     --with-jvm-variants=$JVM_VARIANTS \
-    --with-jvm-features=-dtrace,-zero,-vm-structs,-epsilongc,link-time-opt,opt-size \
+    --with-jvm-features=-dtrace,-zero,-vm-structs,-epsilongc \
     --enable-linktime-gc \
     --with-cups-include=$CUPS_DIR \
     --with-devkit=$TOOLCHAIN \
-    --with-native-debug-symbols=external \
+    --with-native-debug-symbols=internal \
     --with-debug-level=$JDK_DEBUG_LEVEL \
     --with-fontconfig-include=$ANDROID_INCLUDE \
     $AUTOCONF_x11arg $AUTOCONF_EXTRA_ARGS \
