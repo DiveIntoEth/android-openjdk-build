@@ -55,7 +55,7 @@ AUTOCONF_EXTRA_ARGS+="OBJCOPY=$OBJCOPY \
   "
 
 #no error
-export CFLAGS+=" -DANDROID -D__ANDROID__=1 -D__TERMUX__=1 -DLE_STANDALONE -Wno-int-conversion -Wno-error=implicit-function-declaration -Wno-unused-command-line-argument -O1 -g3"
+export CFLAGS+=" -DANDROID -D__ANDROID__=1 -D__TERMUX__=1 -DLE_STANDALONE -Wno-int-conversion -Wno-error=implicit-function-declaration -Wno-unused-command-line-argument -O1 -g3 -funwind-tables"
 
 <<EOF
 export CFLAGS+=" -O3 -mllvm -hot-cold-split=true -fdata-sections -ffunction-sections -fmerge-all-constants -ftree-vectorize -fomit-frame-pointer -fvectorize -fslp-vectorize -fno-semantic-interposition -pipe -integrated-as -pthread -stdlib=libc++"
@@ -73,7 +73,7 @@ export OMP_NUM_THREADS=4
 export CFLAGS+=" -ffast-math -fno-finite-math-only -fno-signed-zeros -fno-trapping-math -fno-math-errno -freciprocal-math -fno-associative-math"
 EOF
 
-export LDFLAGS+=" -L$PWD/dummy_libs -g3" 
+export LDFLAGS+=" -L$PWD/dummy_libs -g3 -DASSERT -DCHECK_UNHANDLED_OOPS -fno-optimize-sibling-calls --disable-zip-debug-info" 
 
 # Create dummy libraries so we won't have to remove them in OpenJDK makefiles
 mkdir -p dummy_libs
